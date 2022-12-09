@@ -1,0 +1,8 @@
+
+spring:
+  application:
+    name: ValidatorMS
+
+          
+server:
+  port: 5400
