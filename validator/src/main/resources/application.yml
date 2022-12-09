@@ -2,7 +2,12 @@
 spring:
   application:
     name: ValidatorMS
-
+amazon:
+  dynamodb:
+    endpoint: http://dynamodb-local:8000/
+  aws:
+    accesskey: key
+    secretkey: key2
           
 server:
   port: 5400
