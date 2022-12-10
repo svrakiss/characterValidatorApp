@@ -13,7 +13,7 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 
 @Configuration
 @EnableDynamoDBRepositories
-  (basePackages = "com.baeldung.spring.data.dynamodb.repositories")
+  (basePackages = "com.foxy.patreon.validator.repository")
 public class DynamoDBConfig {
 
     @Value("${amazon.dynamodb.endpoint}")
@@ -24,13 +24,17 @@ public class DynamoDBConfig {
 
     @Value("${amazon.aws.secretkey}")
     private String amazonAWSSecretKey;
-
+    @Value("${amazon.aws.region}")
+    private String amazonAWSRegion;
     @Bean
     public AmazonDynamoDB amazonDynamoDB() {
-        AmazonDynamoDB amazonDynamoDB 
-          = AmazonDynamoDBClientBuilder.defaultClient();
+        // AmazonDynamoDB amazonDynamoDB 
+        var builder
+          = AmazonDynamoDBClientBuilder.standard();
+          builder.setRegion(amazonAWSRegion);
+        //   builder.setCredentials(()->amazonAWSCredentials());
         //   (amazonAWSCredentials());
-        
+        var amazonDynamoDB = builder.build();
         if (!StringUtils.hasText(amazonDynamoDBEndpoint)) {
             amazonDynamoDB.setEndpoint(amazonDynamoDBEndpoint);
         }
