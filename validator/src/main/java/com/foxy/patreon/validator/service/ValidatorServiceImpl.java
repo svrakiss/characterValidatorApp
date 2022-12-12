@@ -3,12 +3,15 @@ package com.foxy.patreon.validator.service;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.foxy.patreon.validator.repository.PatronRepository;
 
 import net.minidev.json.JSONObject;
+import reactor.core.publisher.Mono;
 
 @Service("validatorService")
 public class ValidatorServiceImpl implements ValidatorService{
@@ -18,7 +21,7 @@ public class ValidatorServiceImpl implements ValidatorService{
     @Autowired
     WebClient rest;
     @Override
-    public void updateMembers(String campaignId) {
+    public Mono<ResponseEntity<String>> updateMembers(String campaignId) {
         
         JSONObject reqJsonObject = new JSONObject();
         // need to explicitly state includes fields
@@ -30,9 +33,11 @@ public class ValidatorServiceImpl implements ValidatorService{
         reqJsonObject.put("fields[tier]",List.of("title"));
         var result=rest.get()
         .uri("http://coolwhip_2:65010/campaign/members?campaign_id="+campaignId, reqJsonObject)
+        .accept(MediaType.APPLICATION_JSON)
         .retrieve()
-        .bodyToMono(String.class);
-        System.out.println(result);
+        .toEntity(String.class);
+        // System.out.println(result.block());
+        return result;
     }
     
 }

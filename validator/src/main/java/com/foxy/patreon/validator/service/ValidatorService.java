@@ -1,6 +1,11 @@
 package com.foxy.patreon.validator.service;
+
+import org.springframework.http.ResponseEntity;
+
+import reactor.core.publisher.Mono;
+
 public interface ValidatorService{
 
-    void updateMembers(String campaignId);
+    Mono<ResponseEntity<String>> updateMembers(String campaignId);
 
 }

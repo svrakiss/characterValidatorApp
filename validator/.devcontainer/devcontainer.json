@@ -9,6 +9,12 @@
 			"installMaven": "true",
 			"installGradle": "false"
 		}
+	},
+	"portsAttributes": {
+		"5401": {
+			"label": "Application",
+			"onAutoForward": "notify"
+		}
 	}
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
