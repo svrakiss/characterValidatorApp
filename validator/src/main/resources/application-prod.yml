@@ -1,0 +1,29 @@
+
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          patreon:
+            authorization-grant-type: authorization_code
+            client-id: 
+            client-secret: 
+            scope: identity.memberships, campaigns, campaigns.members
+            redirect-uri: http://localhost:5401/oauth2/redirect
+        provider:
+          patreon:
+            authorization-uri: https://www.patreon.com/oauth2/authorize
+            token-uri: https://www.patreon.com/api/oauth2/token
+  application:
+    name: ValidatorMS
+amazon:
+  dynamodb:
+    endpoint: http://dynamodb-local:8000/
+  aws:
+    accesskey: key
+    secretkey: key2
+    region: us-east-1
+
+server:
+# make sure this is mapped to the same port on the host!!
+  port: 5401
