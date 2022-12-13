@@ -123,6 +123,12 @@ public class PatronEntity {
     public void setSortKey(String sortKey) {
         this.sortKey = sortKey;
     }
+    @Override
+    public String toString() {
+        return "PatronEntity [id=" + id + ", sortKey=" + sortKey + ", discordId=" + discordId + ", patronId=" + patronId
+                + ", characterName=" + characterName + ", name=" + name + ", tier=" + tier + ", status=" + status
+                + ", creationDate=" + creationDate + ", image=" + image + "]";
+    }
 
     
 }

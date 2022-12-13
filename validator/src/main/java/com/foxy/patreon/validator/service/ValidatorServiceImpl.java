@@ -3,6 +3,7 @@ package com.foxy.patreon.validator.service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -12,6 +13,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import com.foxy.patreon.validator.entity.PatronEntity;
 import com.foxy.patreon.validator.repository.PatronRepository;
 import net.minidev.json.JSONObject;
+import reactor.core.publisher.Mono;
 
 @Service("validatorService")
 public class ValidatorServiceImpl implements ValidatorService{
@@ -44,5 +46,29 @@ public class ValidatorServiceImpl implements ValidatorService{
         patronRepo.addAll(result);
         // return result;
     }
+    public Mono<PatronEntity> findByDiscordId(String discordId){
+        return null;
+    }
+    public Mono<PatronEntity> findByPatronId(String patronId){
+        return null;
+    }
+    @Override
+    public Mono<PatronEntity> findById(PatronEntity patronEntity) {
+        // TODO Auto-generated method stub
+        final Pattern matcher = Pattern.compile(".*");
+        final Pattern matcher2 = Pattern.compile(".*");
+        if(patronEntity.getPatronId() !=null && matcher.matcher(patronEntity.getPatronId()).matches()  ){
+            return findByPatronId(patronEntity.getPatronId());
+        }
+        if(patronEntity.getDiscordId() !=null &&
+        matcher2.matcher(patronEntity.getDiscordId()).matches())
+        {
+            return findByDiscordId(patronEntity.getDiscordId());
+        }
+    if(patronEntity.getId() !=null){
+        return patronRepo.findById(patronEntity.getId());
+    }
+    return Mono.empty();
+}
     
 }
