@@ -35,10 +35,11 @@ ValidatorService validatorService;
         return ResponseEntity.ok("Hi");
     }
     @RequestMapping(value="/update/{campaign_id}",method={RequestMethod.POST,RequestMethod.GET})
-    public Mono<ResponseEntity<List<PatronEntity>>> updateMembers(@PathVariable("campaign_id") String campaignId){
+    public Mono<ResponseEntity<String>> updateMembers(@PathVariable("campaign_id") String campaignId){
         // System.out.println(validatorService.updateMembers(campaignId).block());
         // return new ResponseEntity<>("Success",HttpStatus.OK);
-        return validatorService.updateMembers(campaignId);
+        validatorService.updateMembers(campaignId);
+    return Mono.just(ResponseEntity.ok("Hi"));
     }
     @RequestMapping(value="/oauth2/redirect", method={RequestMethod.POST,RequestMethod.GET})
     public ResponseEntity<String> callback(@RequestParam("code") String code, @RequestParam("state") String state){
