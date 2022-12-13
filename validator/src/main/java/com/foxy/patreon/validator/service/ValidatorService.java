@@ -11,6 +11,6 @@ import reactor.core.publisher.Mono;
 
 public interface ValidatorService{
 
-    Mono<ResponseEntity<List<PatronEntity>>> updateMembers(String campaignId);
+    void updateMembers(String campaignId);
 
 }

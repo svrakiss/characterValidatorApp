@@ -5,19 +5,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.foxy.patreon.validator.entity.PatronEntity;
 import com.foxy.patreon.validator.repository.PatronRepository;
-import com.nimbusds.jose.shaded.gson.JsonObject;
-
 import net.minidev.json.JSONObject;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 @Service("validatorService")
 public class ValidatorServiceImpl implements ValidatorService{
@@ -27,7 +21,7 @@ public class ValidatorServiceImpl implements ValidatorService{
     @Autowired
     WebClient rest;
     @Override
-    public Mono<ResponseEntity<List<PatronEntity>>> updateMembers(String campaignId) {
+    public void updateMembers(String campaignId) {
         
         JSONObject reqJsonObject = new JSONObject();
         // need to explicitly state includes fields
@@ -47,7 +41,8 @@ public class ValidatorServiceImpl implements ValidatorService{
         .retrieve()
         .toEntityList(PatronEntity.class);
         // System.out.println(result.block());
-        return result;
+        patronRepo.addAll(result);
+        // return result;
     }
     
 }
