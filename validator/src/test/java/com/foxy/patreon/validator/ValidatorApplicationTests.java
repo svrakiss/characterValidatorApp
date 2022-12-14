@@ -1,7 +1,13 @@
 package com.foxy.patreon.validator;
 
+import static org.junit.jupiter.api.DynamicTest.stream;
+
+import java.util.Map;
+import java.util.stream.Stream;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,11 +15,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 // import org.springframework.web.client.RestTemplate;
 
+import com.amazonaws.services.dynamodbv2.document.Index;
 import com.foxy.patreon.validator.entity.PatronEntity;
+import com.foxy.patreon.validator.repository.TableExtension;
 import com.foxy.patreon.validator.service.ValidatorService;
 
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
+import software.amazon.awssdk.enhanced.dynamodb.IndexMetadata;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.DeleteTableRequest;
@@ -35,6 +44,18 @@ ValidatorService validatorService;
 org.slf4j.Logger logger= LoggerFactory.getLogger(ValidatorApplicationTests.class);
 	@Test
 	void contextLoads() {
+		var table = enhancedClient.table("Patron", TableSchema.fromBean(PatronEntity.class));
+		logger.info(table.describeTable().toString());
+		var result =TableSchema.fromBean(PatronEntity.class);
+		logger.info(result.attributeNames().toString());
+		result.tableMetadata().indices().stream()
+		.map(a->a.name())
+		.forEach(logger::info);
+		table.tableSchema().tableMetadata().indices().stream()
+		.map(a->a.name())
+		.map(a->table.index(a))
+		.map(n->n.indexName())
+		.forEach(logger::info);
 	}
 
 	@ParameterizedTest()
@@ -43,7 +64,8 @@ org.slf4j.Logger logger= LoggerFactory.getLogger(ValidatorApplicationTests.class
 
 		try{
 			DynamoDbTable<PatronEntity> table = enhancedClient.table(name,TableSchema.fromBean(PatronEntity.class));
-			table.createTable();
+			// table.createTable();
+			TableExtension.createTableWithIndices(table);
 			client.waiter().waitUntilTableExists(b-> b.tableName(name));
 			logger.info("Nothing happened");
 		}catch(Exception e){
@@ -68,13 +90,13 @@ org.slf4j.Logger logger= LoggerFactory.getLogger(ValidatorApplicationTests.class
 		// System.out.println(responseEntity);
 	}
 	@ParameterizedTest
-	@ValueSource(strings={"Patron"})
+	@ValueSource(strings={"PatronTest"})
 	void testUpdateMembers(String tableName){
 		if(!client.listTables(ListTablesRequest.builder().build()).tableNames().contains(tableName))
 		{
 			try{
 				DynamoDbTable<PatronEntity> table = enhancedClient.table(tableName,TableSchema.fromBean(PatronEntity.class));
-			table.createTable();
+				TableExtension.createTableWithIndices(table);
 			client.waiter().waitUntilTableExists(b-> b.tableName(tableName));
 			}catch(Exception e){
 				System.out.println("Something Happened");
@@ -94,13 +116,37 @@ org.slf4j.Logger logger= LoggerFactory.getLogger(ValidatorApplicationTests.class
 		
 		}
 	}
-	@Test
-	void findById(){
+	@ParameterizedTest
+	@MethodSource(value = "findByIdMethodSource")
+	void findById(Map<String,String> args){
 		PatronEntity p = new PatronEntity();
-		// p.setDiscordId(null);
-		p.setId("PATREON_01a79487-8d90-4fc7-b783-9238ef0e490c");
+		p = parseArgs(p,args);
 		logger.info(validatorService.findById(p)
 		.block().toString());
+	}
+	
+	public static Stream<Map<String,String>> findByIdMethodSource(){
+		return Stream.of(Map.of("id","PATREON_01a79487-8d90-4fc7-b783-9238ef0e490c"),
+		Map.of("patronid","01a79487-8d90-4fc7-b783-9238ef0e490c"),
+		Map.of("discordid","536343876378820628"));
+	}
+
+	private static PatronEntity parseArgs(PatronEntity p, Map<String,String> args) {
+		args.entrySet().forEach((key)->{switch (key.getKey().toLowerCase()) {
+			case "patronid": p.setPatronId(key.getValue());
+				break;
+			case "status": p.setStatus(key.getValue());
+				break;
+			case "id": p.setId(key.getValue());
+				break;
+			case "discordid": p.setDiscordId(key.getValue());
+				break;
+			case "characterName": p.setCharacterName(key.getValue());
+				break;
+			default:
+				break;
+		}});
+		return p;
 	}
 }
 

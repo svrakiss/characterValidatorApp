@@ -42,19 +42,17 @@ public class ValidatorServiceImpl implements ValidatorService{
          .accept(MediaType.APPLICATION_JSON)
         .retrieve()
         .toEntityList(PatronEntity.class);
-        // System.out.println(result.block());
         patronRepo.addAll(result);
-        // return result;
     }
     public Mono<PatronEntity> findByDiscordId(String discordId){
-        return null;
+        return patronRepo.findFirstInfoByDiscordId(discordId);
     }
     public Mono<PatronEntity> findByPatronId(String patronId){
-        return null;
+        return patronRepo.findById("PATREON_"+patronId);
     }
     @Override
     public Mono<PatronEntity> findById(PatronEntity patronEntity) {
-        // TODO Auto-generated method stub
+        // TODO Determine schema for patron id and discord id
         final Pattern matcher = Pattern.compile(".*");
         final Pattern matcher2 = Pattern.compile(".*");
         if(patronEntity.getPatronId() !=null && matcher.matcher(patronEntity.getPatronId()).matches()  ){
