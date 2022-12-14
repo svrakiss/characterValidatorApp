@@ -27,11 +27,10 @@ ValidatorService validatorService;
     public ResponseEntity<String> validate(){
         return ResponseEntity.ok("Hi");
     }
-    @RequestMapping(value="/update/{campaign_id}",method={RequestMethod.POST,RequestMethod.GET})
-    public Mono<ResponseEntity<String>> updateMembers(@PathVariable("campaign_id") String campaignId){
-        // System.out.println(validatorService.updateMembers(campaignId).block());
-        // return new ResponseEntity<>("Success",HttpStatus.OK);
-        validatorService.updateMembers(campaignId);
+    @RequestMapping(value="/update/{campaign_id}",method={RequestMethod.PUT,RequestMethod.GET})
+    public Mono<ResponseEntity<String>> updateMembers(@PathVariable("campaign_id") String campaignId,@RequestParam(defaultValue = "100",name = "pageSize") Integer pageSize ){
+
+        validatorService.updateMembers(campaignId,pageSize);
     return Mono.just(ResponseEntity.ok("Hi"));
     }
     @RequestMapping(value="/oauth2/redirect", method={RequestMethod.POST,RequestMethod.GET})
