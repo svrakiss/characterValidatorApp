@@ -14,6 +14,7 @@ import org.springframework.stereotype.Repository;
 import com.foxy.patreon.validator.dto.PatronDTO;
 import com.foxy.patreon.validator.entity.PatronEntity;
 
+import reactor.core.Disposable;
 import reactor.core.publisher.Mono;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbIndex;
@@ -27,31 +28,29 @@ import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 @Repository
 public class PatronRepository {
     final static Logger logger = LoggerFactory.getLogger(PatronRepository.class);
-    @Autowired
-    DynamoDbEnhancedClient client;
-    public void save(PatronDTO patronDTO){
+    DynamoDbTable<PatronEntity> table;
+    PatronRepository(DynamoDbEnhancedClient client){
+        this.table= getTable(client);
+    }
+    public Mono<Void> save(PatronDTO patronDTO){
         PatronEntity patronEntity= patronDTO.prepareEntity(patronDTO);
-        DynamoDbTable<PatronEntity> table = getTable();
-        table.putItem(patronEntity);
+        return save(patronEntity);
     }
-    public void save (PatronEntity patronEntity){
-        DynamoDbTable<PatronEntity> table = getTable();
-        table.putItem(patronEntity);
+    public Mono<Void> save (PatronEntity patronEntity){
+        return Mono.fromRunnable(()-> table.putItem(patronEntity));
     }
-    private DynamoDbTable<PatronEntity> getTable(){
+    private DynamoDbTable<PatronEntity> getTable(DynamoDbEnhancedClient client){
         return client.table("PatronTest", TableSchema.fromBean(PatronEntity.class));
     }
-    public void addAll(Mono<ResponseEntity<List<PatronEntity>>> response){
-        ResponseEntity<List<PatronEntity>> answer = response.block();
-        if(answer.hasBody()){
-        DynamoDbTable<PatronEntity> table = getTable();
-            
-        answer.getBody()
-        .forEach(e->table.updateItem(e));
-        }
+    public  Mono<Void> addAll(Mono<ResponseEntity<List<PatronEntity>>> response){
+        
+        response.mapNotNull(ResponseEntity::getBody)
+        .flatMapIterable(i->i)
+        .subscribe(table::updateItem);
+        return Mono.empty();
     }
+
     public Mono<PatronEntity> findById(String id) {
-        DynamoDbTable<PatronEntity> table =getTable();
         Key key = Key.builder().partitionValue(id).sortValue("INFO").build();
         try{
             return Mono.just(table.getItem(key));
@@ -61,7 +60,6 @@ public class PatronRepository {
         return Mono.empty();
     }
     public Mono<PatronEntity> findFirstInfoByDiscordId(String discordId){
-        DynamoDbTable<PatronEntity> table =getTable();
         // Only the repository should touch the indices
         DynamoDbIndex<PatronEntity> index =table.index("discordIdIndex");
         Key key = Key.builder().partitionValue(discordId).build();
