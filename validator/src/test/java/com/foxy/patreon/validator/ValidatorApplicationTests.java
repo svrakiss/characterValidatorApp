@@ -7,6 +7,7 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.LoggerFactory;
@@ -90,8 +91,8 @@ org.slf4j.Logger logger= LoggerFactory.getLogger(ValidatorApplicationTests.class
 		// System.out.println(responseEntity);
 	}
 	@ParameterizedTest
-	@ValueSource(strings={"PatronTest"})
-	void testUpdateMembers(String tableName){
+	@MethodSource("testUpdateMembersArgSource")
+	void testUpdateMembers(String tableName,Integer pageSize){
 		if(!client.listTables(ListTablesRequest.builder().build()).tableNames().contains(tableName))
 		{
 			try{
@@ -107,7 +108,7 @@ org.slf4j.Logger logger= LoggerFactory.getLogger(ValidatorApplicationTests.class
 			}
 		}
 		
-		try{validatorService.updateMembers("9684285");}
+		try{validatorService.updateMembers("9684285",pageSize);}
 		catch(Exception e){
 			System.out.println("Something Happened");
 			logger.error(e.getMessage());
@@ -130,7 +131,12 @@ org.slf4j.Logger logger= LoggerFactory.getLogger(ValidatorApplicationTests.class
 		Map.of("patronid","01a79487-8d90-4fc7-b783-9238ef0e490c"),
 		Map.of("discordid","536343876378820628"));
 	}
-
+	public static Stream<Arguments> testUpdateMembersArgSource() {
+		return Stream.of(
+			Arguments.of("PatronTest",1),
+			Arguments.of("PatronTest",123)
+		);
+	}
 	private static PatronEntity parseArgs(PatronEntity p, Map<String,String> args) {
 		args.entrySet().forEach((key)->{switch (key.getKey().toLowerCase()) {
 			case "patronid": p.setPatronId(key.getValue());

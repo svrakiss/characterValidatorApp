@@ -23,7 +23,11 @@ public class ValidatorServiceImpl implements ValidatorService{
     @Autowired
     WebClient rest;
     @Override
-    public void updateMembers(String campaignId) {
+    public void updateMembers(String campaignId){
+        updateMembers(campaignId, 100);
+    }
+    @Override
+    public void updateMembers(String campaignId, Integer pageSize) {
         
         JSONObject reqJsonObject = new JSONObject();
         // need to explicitly state includes fields
@@ -36,7 +40,7 @@ public class ValidatorServiceImpl implements ValidatorService{
         fields.put("tier",List.of("title"));
         reqJsonObject.put("fields", fields);
         var result=rest.post()
-        .uri("http://coolwhip_2:65010/campaign/members?campaign_id="+campaignId)
+        .uri("http://coolwhip_2:65010/campaign/members?campaign_id="+campaignId+"&page_size="+pageSize)
         .contentType(MediaType.APPLICATION_JSON)
         .bodyValue(reqJsonObject)
          .accept(MediaType.APPLICATION_JSON)
