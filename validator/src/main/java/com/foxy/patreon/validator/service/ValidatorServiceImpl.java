@@ -90,7 +90,32 @@ public class ValidatorServiceImpl implements ValidatorService{
     }
     @Override
     public Mono<PatronEntity> addCharacter(PatronEntity patronEntity) {
-
+        if(patronEntity.getSortKey() == null){
+            return Mono.error(()->new Exception("There's nothing to identify this entry!"));
+        }
+        if(patronEntity.getId() == null){
+            if( patronEntity.getPatronId() == null){
+                if(patronEntity.getDiscordId() == null){
+                    return Mono.error(()->new Exception("There's nothing to identify this entry!"));
+                }
+                    return findByDiscordId(patronEntity.getDiscordId())
+                    .map(p-> {
+                        patronEntity.setId(p.getId());
+                        return patronEntity;
+                    })
+                    .flatMap(
+                        p->patronRepo.addCharacter(p)
+                    );
+            }
+            return findByPatronId(patronEntity.getPatronId()) // if this doesn't throw an error, everything is fine
+            .map(p->{
+                patronEntity.setId(p.getId()); // pretty much only allow people with a valid patron id to submit
+                return patronEntity;
+            })
+            .flatMap(
+                p->patronRepo.addCharacter(p)
+            );
+        }
         return patronRepo.addCharacter(patronEntity);
     }
     

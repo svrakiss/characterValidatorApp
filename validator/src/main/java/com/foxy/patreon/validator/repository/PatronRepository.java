@@ -79,7 +79,7 @@ public class PatronRepository {
         return Mono.just(table.deleteItem(table.index(indexName).keyFrom(patronEntity)));
     }
     public Mono<PatronEntity> addCharacter(PatronEntity patronEntity) {
-        return Mono.just(patronEntity);
+        return Mono.fromCallable(()->table.updateItem(patronEntity));
     }
     public Mono<PatronEntity> deleteCharacter(PatronEntity patronEntity) {
         return null;
