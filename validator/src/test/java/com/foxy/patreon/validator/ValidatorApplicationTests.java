@@ -2,6 +2,10 @@ package com.foxy.patreon.validator;
 
 import static org.junit.jupiter.api.DynamicTest.stream;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -15,12 +19,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 // import org.springframework.web.client.RestTemplate;
+import org.springframework.util.ResourceUtils;
 
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.document.Index;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.exc.StreamReadException;
+import com.fasterxml.jackson.databind.DatabindException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.foxy.patreon.validator.entity.PatronEntity;
 import com.foxy.patreon.validator.repository.TableExtension;
 import com.foxy.patreon.validator.service.ValidatorService;
+import com.nimbusds.jose.util.JSONObjectUtils;
 
+import net.minidev.json.JSONObject;
 import reactor.test.StepVerifier;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
@@ -41,6 +56,10 @@ class ValidatorApplicationTests {
 DynamoDbEnhancedClient enhancedClient;
 @Autowired
 DynamoDbClient client;
+
+static ObjectMapper objectMapper = JsonMapper.builder()
+.addModule(new JavaTimeModule())
+.build();
 @Autowired
 ValidatorService validatorService;
 org.slf4j.Logger logger= LoggerFactory.getLogger(ValidatorApplicationTests.class);
@@ -138,8 +157,8 @@ org.slf4j.Logger logger= LoggerFactory.getLogger(ValidatorApplicationTests.class
 	}
 	public static Stream<Arguments> testUpdateMembersArgSource() {
 		return Stream.of(
-			Arguments.of("PatronTesty",501),
-			Arguments.of("PatronTesty",124)
+			Arguments.of("PatronTestC",501),
+			Arguments.of("PatronTestC",124)
 		);
 	}
 	private static PatronEntity parseArgs(PatronEntity p, Map<String,String> args) {
@@ -158,6 +177,22 @@ org.slf4j.Logger logger= LoggerFactory.getLogger(ValidatorApplicationTests.class
 				break;
 		}});
 		return p;
+	}
+	@ParameterizedTest
+	@MethodSource("testCharacterAddSource")
+	void testCharacterAdd(PatronEntity patronEntity){
+		StepVerifier.create(validatorService.addCharacter(patronEntity))
+		.consumeNextWith(System.out::println)
+		.expectComplete()
+		.verify();
+	}
+	public static Stream<Arguments> testCharacterAddSource() throws StreamReadException, DatabindException, FileNotFoundException, IOException{
+		File f = ResourceUtils.getFile("src/main/resources/example.json");
+		List<PatronEntity> p = objectMapper
+		.readValue(f,objectMapper
+		.getTypeFactory().constructCollectionLikeType(List.class, PatronEntity.class));
+		return p.stream()
+		.map(Arguments::of);
 	}
 }
 

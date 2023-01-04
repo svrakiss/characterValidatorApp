@@ -25,6 +25,23 @@ public class PatronEntity {
     private String characterName;
     private String name;
     private List<String> tier;
+    private String category;
+    @DynamoDbAttribute("Category")
+    @DynamoDbSecondaryPartitionKey(indexNames = {"categoryIndex"})
+    public String getCategory() {
+        return category;
+    }
+    public void setCategory(String category) {
+        this.category = category;
+    }
+    private CharacterEntity meta;
+    @DynamoDbAttribute("CharacterMeta")
+    public CharacterEntity getMeta() {
+        return meta;
+    }
+    public void setMeta(CharacterEntity meta) {
+        this.meta = meta;
+    }
     @DynamoDbAttribute("Tier")
     public List<String> getTier() {
         return tier;
@@ -126,9 +143,10 @@ public class PatronEntity {
     @Override
     public String toString() {
         return "PatronEntity [id=" + id + ", sortKey=" + sortKey + ", discordId=" + discordId + ", patronId=" + patronId
-                + ", characterName=" + characterName + ", name=" + name + ", tier=" + tier + ", status=" + status
-                + ", creationDate=" + creationDate + ", image=" + image + "]";
+                + ", characterName=" + characterName + ", name=" + name + ", tier=" + tier + ", category=" + category
+                + ", meta=" + meta + ", status=" + status + ", creationDate=" + creationDate + ", image=" + image + "]";
     }
+
 
     
 }

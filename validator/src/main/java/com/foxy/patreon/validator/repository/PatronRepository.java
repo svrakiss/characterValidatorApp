@@ -42,7 +42,7 @@ public class PatronRepository {
         return Mono.fromRunnable(()-> table.putItem(patronEntity));
     }
     private DynamoDbTable<PatronEntity> getTable(DynamoDbEnhancedClient client){
-        return client.table("PatronTesty", TableSchema.fromBean(PatronEntity.class));
+        return client.table("PatronTestC", TableSchema.fromBean(PatronEntity.class));
     }
     public  Flux<PatronEntity> addAll(Mono<ResponseEntity<List<PatronEntity>>> response){
         
@@ -79,7 +79,7 @@ public class PatronRepository {
         return Mono.just(table.deleteItem(table.index(indexName).keyFrom(patronEntity)));
     }
     public Mono<PatronEntity> addCharacter(PatronEntity patronEntity) {
-        return null;
+        return Mono.just(patronEntity);
     }
     public Mono<PatronEntity> deleteCharacter(PatronEntity patronEntity) {
         return null;

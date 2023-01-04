@@ -19,6 +19,30 @@
 	</properties>
 	<dependencies>
 
+		<!-- <dependency>
+			<groupId>com.fasterxml.jackson.datatype</groupId>
+			<artifactId>jackson-datatype-jsr310</artifactId>
+			<version>2.14.1</version>
+			<type>bundle</type>
+		</dependency> -->
+<!--	Parameter names	-->
+<dependency>
+    <groupId>com.fasterxml.jackson.module</groupId>
+    <artifactId>jackson-module-parameter-names</artifactId>
+</dependency>
+
+<!--	Java 8 Date/time	-->
+<dependency>
+    <groupId>com.fasterxml.jackson.datatype</groupId>
+    <artifactId>jackson-datatype-jsr310</artifactId>
+</dependency>
+
+<!--	Java 8 Datatypes	-->
+<dependency>
+    <groupId>com.fasterxml.jackson.datatype</groupId>
+    <artifactId>jackson-datatype-jdk8</artifactId>
+</dependency>
+
 		<dependency>
 			<groupId>io.projectreactor</groupId>
 			<artifactId>reactor-test</artifactId>
@@ -49,6 +73,8 @@
         <artifactId>spring-data-dynamodb</artifactId>
         <version>5.1.0</version>
     </dependency>
+<!-- <dependency>
+<groupId></groupId> -->
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -78,7 +104,13 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
-
+    <dependency>
+      <groupId>com.fasterxml.jackson</groupId>
+      <artifactId>jackson-bom</artifactId>
+      <version>2.14.1</version>
+      <scope>import</scope>
+      <type>pom</type>
+    </dependency>  
 		</dependencies>
 	</dependencyManagement>
 	<build>
@@ -98,6 +130,13 @@
 				<enabled>false</enabled>
 			</snapshots>
 		</repository>
+		 <repository>
+      <id>sonatype-nexus-snapshots</id>
+      <name>Sonatype Nexus Snapshots</name>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+      <releases><enabled>false</enabled></releases>
+      <snapshots><enabled>true</enabled></snapshots>
+    </repository>
 	</repositories>
 
 </project>
