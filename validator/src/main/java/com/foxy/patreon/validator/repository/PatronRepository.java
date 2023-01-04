@@ -15,6 +15,8 @@ import com.foxy.patreon.validator.dto.PatronDTO;
 import com.foxy.patreon.validator.entity.PatronEntity;
 
 import reactor.core.Disposable;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.FluxSink;
 import reactor.core.publisher.Mono;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbIndex;
@@ -40,14 +42,13 @@ public class PatronRepository {
         return Mono.fromRunnable(()-> table.putItem(patronEntity));
     }
     private DynamoDbTable<PatronEntity> getTable(DynamoDbEnhancedClient client){
-        return client.table("PatronTest", TableSchema.fromBean(PatronEntity.class));
+        return client.table("PatronTesty", TableSchema.fromBean(PatronEntity.class));
     }
-    public  Mono<Void> addAll(Mono<ResponseEntity<List<PatronEntity>>> response){
+    public  Flux<PatronEntity> addAll(Mono<ResponseEntity<List<PatronEntity>>> response){
         
-        response.mapNotNull(ResponseEntity::getBody)
-        .flatMapIterable(i->i)
-        .subscribe(table::updateItem);
-        return Mono.empty();
+        return response.mapNotNull(ResponseEntity::getBody)
+        .flatMapIterable(i->i) // turns it into a Flux of Patron Entities 
+        .map(table::updateItem); // updateItem takes a PatronEntity and returns a Patron Entity
     }
 
     public Mono<PatronEntity> findById(String id) {
@@ -73,5 +74,14 @@ public class PatronRepository {
 
         // grab the first one
         return Mono.justOrEmpty(result);
+    }
+    public Mono<PatronEntity> delete(PatronEntity patronEntity,String indexName) {
+        return Mono.just(table.deleteItem(table.index(indexName).keyFrom(patronEntity)));
+    }
+    public Mono<PatronEntity> addCharacter(PatronEntity patronEntity) {
+        return null;
+    }
+    public Mono<PatronEntity> deleteCharacter(PatronEntity patronEntity) {
+        return null;
     }
 }

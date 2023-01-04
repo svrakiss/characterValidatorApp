@@ -1,10 +1,13 @@
 package com.foxy.patreon.validator;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.oauth2.client.AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager;
@@ -19,21 +22,33 @@ import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import io.netty.handler.timeout.ReadTimeoutHandler;
+import io.netty.handler.timeout.WriteTimeoutHandler;
+import reactor.netty.Connection;
+import reactor.netty.http.client.HttpClient;
+import reactor.netty.tcp.TcpClient;
+
 @Configuration
-@EnableWebFluxSecurity
+// @EnableWebFluxSecurity
 public class OAuth2ClientSecurityConfig {
   
 	@Bean
     // @Autowired
 	public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http, ReactiveClientRegistrationRepository clientRegistrationRepository, ReactiveOAuth2AuthorizedClientService authorizedClientService) {
-		http
-		.oauth2Login(oauth2 -> oauth2
-				.clientRegistrationRepository(clientRegistrationRepository)
-				.authorizedClientService(authorizedClientService)
-			);
+		// http
+		// .oauth2Login(oauth2 -> oauth2
+		// 		.clientRegistrationRepository(clientRegistrationRepository)
+		// 		.authorizedClientService(authorizedClientService)
+		// 	);
 		return http.build();
 	}
-
+    // @Bean
+    // public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http){
+    //     return http.build();
+	// }
+    // }
     @Bean
      ReactiveOAuth2AuthorizedClientService authorizedClientService(ReactiveClientRegistrationRepository clientRegistrations) {
         return new InMemoryReactiveOAuth2AuthorizedClientService(clientRegistrations);
@@ -63,23 +78,49 @@ public class OAuth2ClientSecurityConfig {
                 return new InMemoryReactiveClientRegistrationRepository(intermediate);
     }
 
-    @Bean
-    @Autowired
-WebClient webClient(ReactiveOAuth2AuthorizedClientManager authorizedClientManager,
-@Value("${spring.security.oauth2.client.token}") String token) {
-	ServerOAuth2AuthorizedClientExchangeFilterFunction oauth2Client =
-			new ServerOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager);
-	oauth2Client.setDefaultClientRegistrationId("patreon");
-    ;
-    return WebClient.builder().defaultHeader("Authorization", "Bearer "+token) 
-			.filter(oauth2Client)
-			.build();
-}
+//     @Bean
+//     @Autowired
+// WebClient webClient(ReactiveOAuth2AuthorizedClientManager authorizedClientManager,
+// @Value("${spring.security.oauth2.client.token}") String token) {
+// 	ServerOAuth2AuthorizedClientExchangeFilterFunction oauth2Client =
+// 			new ServerOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager);
+// 	oauth2Client.setDefaultClientRegistrationId("patreon");
+//     ;
+//     return WebClient.builder().defaultHeader("Authorization", "Bearer "+token) 
+// 			.filter(oauth2Client)
+// 			.build();
+// }
 @Bean
 ReactiveOAuth2AuthorizedClientManager authorizedClientManager(ReactiveClientRegistrationRepository clientRegistrations, ReactiveOAuth2AuthorizedClientService clientService)
 {
     return new AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager(clientRegistrations, clientService);
     
    
+}
+
+@Bean
+  public WebClient webClient(
+      @Value("${http.client.connection-timeout-millis}") final int connectionTimeoutMillis,
+      @Value("${http.client.socket-timeout-millis}") final int socketTimeoutMillis,
+      @Value("${http.client.wire-tap-enabled}") final boolean wireTapEnabled,
+      final ObjectMapper objectMapper,
+      @Value("${spring.security.oauth2.client.token}") String token) {
+
+    Consumer<Connection> doOnConnectedConsumer = connection ->
+        connection
+            .addHandlerFirst(new ReadTimeoutHandler(socketTimeoutMillis, TimeUnit.MILLISECONDS))
+            .addHandlerLast(new WriteTimeoutHandler(connectionTimeoutMillis, TimeUnit.MILLISECONDS));
+
+    // TcpClient tcpClient = TcpClient.newConnection()
+    //     .wiretap(wireTapEnabled)
+    //     .option(CONNECT_TIMEOUT_MILLIS, connectionTimeoutMillis)
+    //     .doOnConnected(doOnConnectedConsumer);
+
+    return WebClient.builder()
+        .clientConnector(new ReactorClientHttpConnector(HttpClient.create()
+        .doOnConnected(doOnConnectedConsumer)))
+        .defaultHeader("Authorization", "Bearer "+token) 
+        // .exchangeStrategies(customExchangeStrategies(objectMapper))
+        .build();
 }
 }

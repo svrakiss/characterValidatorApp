@@ -21,6 +21,7 @@ import com.foxy.patreon.validator.entity.PatronEntity;
 import com.foxy.patreon.validator.repository.TableExtension;
 import com.foxy.patreon.validator.service.ValidatorService;
 
+import reactor.test.StepVerifier;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.IndexMetadata;
@@ -108,10 +109,14 @@ org.slf4j.Logger logger= LoggerFactory.getLogger(ValidatorApplicationTests.class
 			}
 		}
 		
-		try{validatorService.updateMembers("9684285",pageSize);}
+		try{StepVerifier.create(
+			validatorService.updateMembers("3793891",pageSize))
+			.expectNextCount(3514)
+			.expectComplete()
+			.verify();}
 		catch(Exception e){
 			System.out.println("Something Happened");
-			logger.error(e.getMessage());
+			logger.error(e.getMessage(),e);
 		}finally{
 			logger.info(client.describeTable(DescribeTableRequest.builder().tableName(tableName).build()).toString());
 		
@@ -133,8 +138,8 @@ org.slf4j.Logger logger= LoggerFactory.getLogger(ValidatorApplicationTests.class
 	}
 	public static Stream<Arguments> testUpdateMembersArgSource() {
 		return Stream.of(
-			Arguments.of("PatronTest",1),
-			Arguments.of("PatronTest",123)
+			Arguments.of("PatronTesty",501),
+			Arguments.of("PatronTesty",124)
 		);
 	}
 	private static PatronEntity parseArgs(PatronEntity p, Map<String,String> args) {

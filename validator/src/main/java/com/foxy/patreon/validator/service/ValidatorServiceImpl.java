@@ -13,6 +13,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 import com.foxy.patreon.validator.entity.PatronEntity;
 import com.foxy.patreon.validator.repository.PatronRepository;
 import net.minidev.json.JSONObject;
+import reactor.core.Disposable;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service("validatorService")
@@ -27,7 +29,7 @@ public class ValidatorServiceImpl implements ValidatorService{
         updateMembers(campaignId, 100);
     }
     @Override
-    public void updateMembers(String campaignId, Integer pageSize) {
+    public Flux<PatronEntity> updateMembers(String campaignId, Integer pageSize) {
         
         JSONObject reqJsonObject = new JSONObject();
         // need to explicitly state includes fields
@@ -46,7 +48,8 @@ public class ValidatorServiceImpl implements ValidatorService{
          .accept(MediaType.APPLICATION_JSON)
         .retrieve()
         .toEntityList(PatronEntity.class);
-        patronRepo.addAll(result);
+        return patronRepo.addAll(result);
+   
     }
     public Mono<PatronEntity> findByDiscordId(String discordId){
         return patronRepo.findFirstInfoByDiscordId(discordId);
@@ -72,5 +75,23 @@ public class ValidatorServiceImpl implements ValidatorService{
     }
     return Mono.empty();
 }
+    @Override
+    public Mono<PatronEntity> deletePatron(PatronEntity patronEntity) {
+        // Easiest to use the primary index
+        
+        return patronRepo.delete(patronEntity,pickIndex(patronEntity));
+    }
+    private String pickIndex(PatronEntity patronEntity) {
+        return null;
+    }
+    @Override
+    public Mono<PatronEntity> deleteCharacter(PatronEntity patronEntity) {
+        return patronRepo.deleteCharacter(patronEntity);
+    }
+    @Override
+    public Mono<PatronEntity> addCharacter(PatronEntity patronEntity) {
+
+        return patronRepo.addCharacter(patronEntity);
+    }
     
 }
