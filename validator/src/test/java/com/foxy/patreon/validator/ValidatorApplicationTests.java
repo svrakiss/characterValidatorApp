@@ -1,7 +1,5 @@
 package com.foxy.patreon.validator;
 
-import static org.junit.jupiter.api.DynamicTest.stream;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -21,25 +19,17 @@ import org.springframework.test.context.TestPropertySource;
 // import org.springframework.web.client.RestTemplate;
 import org.springframework.util.ResourceUtils;
 
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
-import com.amazonaws.services.dynamodbv2.document.Index;
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.DatabindException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.foxy.patreon.validator.entity.PatronEntity;
 import com.foxy.patreon.validator.repository.TableExtension;
 import com.foxy.patreon.validator.service.ValidatorService;
-import com.nimbusds.jose.util.JSONObjectUtils;
-
-import net.minidev.json.JSONObject;
 import reactor.test.StepVerifier;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
-import software.amazon.awssdk.enhanced.dynamodb.IndexMetadata;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.DeleteTableRequest;

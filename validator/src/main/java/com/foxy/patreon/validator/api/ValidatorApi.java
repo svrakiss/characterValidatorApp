@@ -1,9 +1,11 @@
 package com.foxy.patreon.validator.api;
 
+import org.apache.commons.logging.Log;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
-import org.springframework.security.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
+// import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+// import org.springframework.security.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,7 +30,7 @@ public class ValidatorApi {
 ValidatorService validatorService;
     @Autowired
     WebClient restTemplate;
-    
+    org.slf4j.Logger logger= LoggerFactory.getLogger(ValidatorApi.class);
     @GetMapping("/validate")
     public ResponseEntity<String> validate(){
         return ResponseEntity.ok("Hi");
@@ -49,6 +51,7 @@ ValidatorService validatorService;
     }
     @PostMapping("/character")
     public Mono<PatronEntity> addCharacter(@RequestBody PatronEntity patronEntity){
+        logger.info(patronEntity.toString());
         return validatorService.addCharacter(patronEntity);
     }
     @RequestMapping(value="/oauth2/redirect", method={RequestMethod.POST,RequestMethod.GET})
