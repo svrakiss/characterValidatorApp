@@ -27,7 +27,7 @@ public class CharacterEntity {
     public String getSource() {
         return source;
     }
-    public void setName(String source) {
+    public void setSource(String source) {
         this.source = source;
     }
     @Override
