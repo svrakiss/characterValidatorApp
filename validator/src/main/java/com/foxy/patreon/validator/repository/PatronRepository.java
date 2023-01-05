@@ -25,6 +25,7 @@ import software.amazon.awssdk.enhanced.dynamodb.Expression;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
+import software.amazon.awssdk.enhanced.dynamodb.model.UpdateItemEnhancedRequest;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
 @Repository
@@ -79,7 +80,12 @@ public class PatronRepository {
         return Mono.just(table.deleteItem(table.index(indexName).keyFrom(patronEntity)));
     }
     public Mono<PatronEntity> addCharacter(PatronEntity patronEntity) {
-        return Mono.fromCallable(()->table.updateItem(patronEntity));
+        return Mono.fromCallable(()->table.updateItem(
+            UpdateItemEnhancedRequest.builder(PatronEntity.class)
+            .item(patronEntity)
+            .ignoreNulls(true) // partial update
+            .build()
+            ));
     }
     public Mono<PatronEntity> deleteCharacter(PatronEntity patronEntity) {
         return null;
