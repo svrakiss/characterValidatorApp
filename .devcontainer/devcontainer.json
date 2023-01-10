@@ -13,14 +13,7 @@
 		"ghcr.io/devcontainers-contrib/features/aws-cdk:2": {}
 
 	},
-	"portsAttributes": {
-		"5401": {
-			"label": "Application",
-			"onAutoForward": "notify"
-		}
-	},
-	"runArgs": ["--network=flask-patreon_default"]
-	,
+
 	"mounts": [
 		"source=${env:USERPROFILE}/.aws,target=/root/.aws,type=bind"
 	],
