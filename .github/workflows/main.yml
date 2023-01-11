@@ -25,15 +25,19 @@ jobs:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ env.AWS_REGION }}
+    
+    - name: Deploy Stacks
+      run: |
+        cd infra && cdk deploy --all
 
 
-    - name: AWS CloudFormation Deploy InfraStack
-      uses: aws-actions/aws-cloudformation-github-deploy@v1.1.0
-      with:
-        name: InfraStack
-        template: infra/cdk.out/InfraStack.template.json
-    - name: AWS CloudFormatiion Deploy SpringValidatorStack
-      uses: aws-actions/aws-cloudformation-github-deploy@v1.1.0
-      with:
-        name: SpringValidatorStack
-        template: infra/cdk.out/SpringValidatorStack.template.json
+    # - name: AWS CloudFormation Deploy InfraStack
+    #   uses: aws-actions/aws-cloudformation-github-deploy@v1.1.0
+    #   with:
+    #     name: InfraStack
+    #     template: infra/cdk.out/InfraStack.template.json
+    # - name: AWS CloudFormatiion Deploy SpringValidatorStack
+    #   uses: aws-actions/aws-cloudformation-github-deploy@v1.1.0
+    #   with:
+    #     name: SpringValidatorStack
+    #     template: infra/cdk.out/SpringValidatorStack.template.json
