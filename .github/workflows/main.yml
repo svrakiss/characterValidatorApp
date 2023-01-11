@@ -30,7 +30,7 @@ jobs:
       uses: youyo/aws-cdk-github-actions@v2
       with:
         cdk_subcommand: 'deploy'
-        cdk_args: '--require-approval never --all'
+        cdk_args: '--require-approval never'
         working_dir: infra
         actions_comment: false
       env:
