@@ -33,7 +33,7 @@ jobs:
         name: InfraStack
         template: infra/cdk.out/InfraStack.template.json
     - name: AWS CloudFormatiion Deploy SpringValidatorStack
-      uses: aws/actions/aws-cloudformation-github-deploy@v1.1.0
+      uses: aws-actions/aws-cloudformation-github-deploy@v1.1.0
       with:
         name: SpringValidatorStack
         template: infra/cdk.out/SpringValidatorStack.template.json
