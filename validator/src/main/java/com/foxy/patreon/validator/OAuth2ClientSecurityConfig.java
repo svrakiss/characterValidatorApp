@@ -23,12 +23,16 @@ import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.foxy.patreon.validator.entity.PatronEntity;
 
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.handler.timeout.WriteTimeoutHandler;
 import reactor.netty.Connection;
 import reactor.netty.http.client.HttpClient;
 import reactor.netty.tcp.TcpClient;
+import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
+import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
+import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 import software.amazon.awssdk.services.ssm.SsmClient;
 
 @Configuration
@@ -114,7 +118,6 @@ public class OAuth2ClientSecurityConfig {
         .findFirst()
         .get()
         .value();
-        System.out.println(token);
     Consumer<Connection> doOnConnectedConsumer = connection ->
         connection
             .addHandlerFirst(new ReadTimeoutHandler(socketTimeoutMillis, TimeUnit.MILLISECONDS))
@@ -132,4 +135,12 @@ public class OAuth2ClientSecurityConfig {
         // .exchangeStrategies(customExchangeStrategies(objectMapper))
         .build();
 }
+@Bean
+public DynamoDbTable<PatronEntity> getTable(DynamoDbEnhancedClient client){
+    String tableName = ssmClient.getParameter(a->a.name("/config/ValidatorMS-production/spring.cloud.aws.dynamodb.tableName"))
+    .parameter()
+    .value();
+    return client.table(tableName, TableSchema.fromBean(PatronEntity.class));
+}
+
 }
