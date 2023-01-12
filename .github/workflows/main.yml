@@ -33,15 +33,4 @@ jobs:
     - name: Synth stack
       run: cd infra && npx cdk synth
     - name: Deploy stack
-      run: cd infra && npx cdk deploy --all --require-approval never 
-    # - name: cdk deploy
-    #   uses: guychauliac/aws-cdk-github-actions@v1
-    #   with:
-    #     cdk_subcommand: 'deploy'
-    #     cdk_args: '--require-approval never'
-    #     working_dir: infra
-    #     actions_comment: false
-    #   env:
-    #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-    #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-    #     AWS_DEFAULT_REGION: ${{ env.AWS_REGION }}
+      run: cd infra && npx cdk deploy --all --require-approval never
