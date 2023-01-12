@@ -29,11 +29,13 @@ import io.netty.handler.timeout.WriteTimeoutHandler;
 import reactor.netty.Connection;
 import reactor.netty.http.client.HttpClient;
 import reactor.netty.tcp.TcpClient;
+import software.amazon.awssdk.services.ssm.SsmClient;
 
 @Configuration
 // @EnableWebFluxSecurity
 public class OAuth2ClientSecurityConfig {
-  
+  @Autowired
+  private SsmClient ssmClient;
 	// @Bean
     // // @Autowired
 	// public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http, ReactiveClientRegistrationRepository clientRegistrationRepository, ReactiveOAuth2AuthorizedClientService authorizedClientService) {
@@ -97,15 +99,22 @@ public class OAuth2ClientSecurityConfig {
     
    
 // }
-
 @Bean
   public WebClient webClient(
       @Value("${http.client.connection-timeout-millis}") final int connectionTimeoutMillis,
       @Value("${http.client.socket-timeout-millis}") final int socketTimeoutMillis,
       @Value("${http.client.wire-tap-enabled}") final boolean wireTapEnabled,
-      final ObjectMapper objectMapper,
-      @Value("${spring.security.oauth2.client.token}") String token) {
-
+      final ObjectMapper objectMapper) {
+        String token = ssmClient
+        .getParametersByPath(request->request.path("/config/ValidatorMS-production/"))
+        .parameters()
+        .stream()
+        .peek(p->System.out.println(p.name()))
+        .filter(p->p.name().endsWith("spring.security.oauth2.client.token"))
+        .findFirst()
+        .get()
+        .value();
+        System.out.println(token);
     Consumer<Connection> doOnConnectedConsumer = connection ->
         connection
             .addHandlerFirst(new ReadTimeoutHandler(socketTimeoutMillis, TimeUnit.MILLISECONDS))

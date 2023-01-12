@@ -1,13 +1,63 @@
 
 spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          patreon:
+            authorization-grant-type: authorization_code
+            client-id: 
+            client-secret: 
+            scope: identity.memberships, campaigns, campaigns.members
+            redirect-uri: http://localhost:5401/oauth2/redirect
+        provider:
+          patreon:
+            authorization-uri: https://www.patreon.com/oauth2/authorize
+            token-uri: https://www.patreon.com/api/oauth2/token
   application:
     name: ValidatorMS
 amazon:
   dynamodb:
     endpoint: http://dynamodb-local:8000/
   aws:
-    accesskey: key
+    accessKey: key
     secretkey: key2
     region: us-east-1
+aws:
+    accessKeyId: key
+    secretKeyId: key2
+    region: us-east-1
 server:
-  port: 5400
+# make sure this is mapped to the same port on the host!!
+  port: 5401
+
+---
+cloud:
+  aws:
+    region:
+      static: us-east-1
+      auto: false
+    credentials:
+      profile-name: personal-admin
+    stack:
+      auto: false
+spring:
+  cloud:
+    aws:
+      dynamodb:
+        region: us-east-1
+      credentials:
+        profile: 
+          name: personal-admin
+
+  profiles:
+    active:
+      - production
+  config:
+    import: "aws-parameterstore:/config/ValidatorMS-production"
+lambdaEndpoint: https://yy3tva2jsj.execute-api.us-east-1.amazonaws.com/prod/
+http:
+  client:
+    connection-timeout-millis: 40000
+    socket-timeout-millis: 40000
+    wire-tap-enabled: true

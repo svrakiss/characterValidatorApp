@@ -1,11 +1,15 @@
 package com.foxy.patreon.validator.service;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import org.bouncycastle.crypto.EphemeralKeyPair;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -18,6 +22,7 @@ import net.minidev.json.JSONObject;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
 
 @Service("validatorService")
 public class ValidatorServiceImpl implements ValidatorService{
@@ -26,10 +31,15 @@ public class ValidatorServiceImpl implements ValidatorService{
     PatronRepository patronRepo;
     @Autowired
     WebClient rest;
+   
+    @Value("${lambdaEndpoint}") String endPoint;
     @Override
     public void updateMembers(String campaignId){
         updateMembers(campaignId, 100);
     }
+        class GateWayTimeoutException extends Exception{
+
+        }
     @Override
     public Flux<PatronEntity> updateMembers(String campaignId, Integer pageSize) {
         
@@ -43,13 +53,18 @@ public class ValidatorServiceImpl implements ValidatorService{
         fields.put("member",List.of("patron_status"));
         fields.put("tier",List.of("title"));
         reqJsonObject.put("fields", fields);
-        var result=rest.post()
-        .uri("http://coolwhip_2:65010/campaign/members?campaign_id="+campaignId+"&page_size="+pageSize)
+        var result=rest.post( )
+        .uri(endPoint+"campaign/members?campaign_id="+campaignId+"&page_size="+pageSize)
         .contentType(MediaType.APPLICATION_JSON)
         .bodyValue(reqJsonObject)
          .accept(MediaType.APPLICATION_JSON)
         .retrieve()
-        .toEntityList(PatronEntity.class);
+        .onStatus(
+            e->e.value()==504, 
+            response-> Mono.error(new GateWayTimeoutException()))
+        .toEntityList(PatronEntity.class)
+        .retryWhen(Retry.backoff(4, Duration.ofSeconds(5))
+        .filter(t->t instanceof GateWayTimeoutException));
         return patronRepo.addAll(result);
    
     }

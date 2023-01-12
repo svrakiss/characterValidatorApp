@@ -1,0 +1,6 @@
+aws:
+  paramstore:
+    enabled: true
+    name: ValidatorMS
+    prefix: /config
+    profile-separator: '-'

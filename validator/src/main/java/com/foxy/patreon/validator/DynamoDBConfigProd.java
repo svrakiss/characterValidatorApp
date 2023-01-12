@@ -17,8 +17,8 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 
 @Configuration
-@Profile("test")
-public class DynamoDBConfig {
+@Profile("test1")
+public class DynamoDBConfigProd {
 
     @Value("${amazon.dynamodb.endpoint}")
     private String amazonDynamoDBEndpoint;
@@ -34,8 +34,9 @@ public class DynamoDBConfig {
     public DynamoDbClient amazonDynamoDB(AwsCredentials awsCredentials) throws URISyntaxException {
         
         var builder
-          = DynamoDbClient.builder().region(Region.of(amazonAWSRegion)).endpointOverride(URI.create(amazonDynamoDBEndpoint))
-          .credentialsProvider(StaticCredentialsProvider.create(awsCredentials));
+          = DynamoDbClient.builder().endpointOverride(URI.create(amazonDynamoDBEndpoint));
+          
+        //   .credentialsProvider(StaticCredentialsProvider.create(awsCredentials));
         var amazonDynamoDB = builder.build();
 
         
