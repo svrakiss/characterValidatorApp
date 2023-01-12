@@ -110,14 +110,9 @@ public class OAuth2ClientSecurityConfig {
       @Value("${http.client.wire-tap-enabled}") final boolean wireTapEnabled,
       final ObjectMapper objectMapper) {
         String token = ssmClient
-        .getParametersByPath(request->request.path("/config/ValidatorMS-production/"))
-        .parameters()
-        .stream()
-        .peek(p->System.out.println(p.name()))
-        .filter(p->p.name().endsWith("spring.security.oauth2.client.token"))
-        .findFirst()
-        .get()
-        .value();
+        .getParameter(request->request.name("/config/ValidatorMS-production/spring.security.oauth2.client.token").withDecryption(true))
+            .parameter()
+            .value();
     Consumer<Connection> doOnConnectedConsumer = connection ->
         connection
             .addHandlerFirst(new ReadTimeoutHandler(socketTimeoutMillis, TimeUnit.MILLISECONDS))
