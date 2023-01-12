@@ -46,9 +46,10 @@ spring:
     aws:
       dynamodb:
         region: us-east-1
-      credentials:
-        profile: 
-          name: personal-admin
+      # credentials:
+      #   profile: 
+      #     name: personal-admin
+      
 
   profiles:
     active:
@@ -61,3 +62,7 @@ http:
     connection-timeout-millis: 40000
     socket-timeout-millis: 40000
     wire-tap-enabled: true
+
+logging:
+  file: 
+    name: my.log

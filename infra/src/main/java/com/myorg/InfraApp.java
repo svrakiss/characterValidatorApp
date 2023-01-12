@@ -41,14 +41,15 @@ public class InfraApp {
                 String  environmentName = (String) app.getNode().tryGetContext("environmentName");
                 // requireNonEmpty(environmentName, "context variable 'environmentName' must not be null");
                 ApplicationEnvironment applicationEnvironment = new ApplicationEnvironment("Validator", environmentName);
-                SpringBootApplicationStack springBootApplicationStack = new SpringBootApplicationStack(app,
+                MySpringBootApplicationStack springBootApplicationStack = new MySpringBootApplicationStack(app,
                 "SpringValidatorStack",
                 Environment.builder()
                 .account(System.getenv("CDK_DEFAULT_ACCOUNT"))
                 .region(System.getenv("CDK_DEFAULT_REGION"))
                 .build(),
-                ifr.dockerImage.getImageUri());
-             
+                ifr.dockerImage.getImageUri(),
+                ifr.dynamoTable.getTableArn());
+               
         app.synth();
     }
 }
