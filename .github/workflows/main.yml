@@ -31,7 +31,7 @@ jobs:
     - name: Install dependencies
       run: cd infra && yarn
     - name: Synth stack
-      run: cd infra && cdk Synth
+      run: cd infra && yarn cdk synth
     - name: Deploy stack
       run: cd infra && yarn cdk deploy --all --require-approval never 
     # - name: cdk deploy
