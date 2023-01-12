@@ -1,5 +1,6 @@
 package com.foxy.patreon.validator.repository;
 
+import java.time.Instant;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -27,14 +28,13 @@ import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 import software.amazon.awssdk.enhanced.dynamodb.model.UpdateItemEnhancedRequest;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
+import software.amazon.awssdk.services.ssm.SsmClient;
 
 @Repository
 public class PatronRepository {
     final static Logger logger = LoggerFactory.getLogger(PatronRepository.class);
+    @Autowired
     DynamoDbTable<PatronEntity> table;
-    PatronRepository(DynamoDbEnhancedClient client){
-        this.table= getTable(client);
-    }
     public Mono<Void> save(PatronDTO patronDTO){
         PatronEntity patronEntity= patronDTO.prepareEntity(patronDTO);
         return save(patronEntity);
@@ -42,14 +42,13 @@ public class PatronRepository {
     public Mono<Void> save (PatronEntity patronEntity){
         return Mono.fromRunnable(()-> table.putItem(patronEntity));
     }
-    private DynamoDbTable<PatronEntity> getTable(DynamoDbEnhancedClient client){
-        return client.table("PatronTestC", TableSchema.fromBean(PatronEntity.class));
-    }
     public  Flux<PatronEntity> addAll(Mono<ResponseEntity<List<PatronEntity>>> response){
-        
+        Instant now = Instant.now();
         return response.mapNotNull(ResponseEntity::getBody)
         .flatMapIterable(i->i) // turns it into a Flux of Patron Entities 
-        .map(table::updateItem); // updateItem takes a PatronEntity and returns a Patron Entity
+        .map(a->{
+            a.setCreationDate(now);
+            return table.updateItem(a);}); // updateItem takes a PatronEntity and returns a Patron Entity
     }
 
     public Mono<PatronEntity> findById(String id) {
