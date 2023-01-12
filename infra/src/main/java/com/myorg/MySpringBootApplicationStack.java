@@ -11,6 +11,7 @@ import software.amazon.awscdk.CfnOutputProps;
 import software.amazon.awscdk.Environment;
 import software.amazon.awscdk.Stack;
 import software.amazon.awscdk.StackProps;
+import software.amazon.awscdk.services.certificatemanager.Certificate;
 import software.amazon.awscdk.services.iam.Effect;
 import software.amazon.awscdk.services.iam.PolicyStatement;
 import software.amazon.awscdk.services.iam.PrincipalBase;
@@ -28,8 +29,8 @@ public class MySpringBootApplicationStack  extends Stack{
           .stackName("SpringBootApplication")
           .env(environment)
           .build());
-    
-    
+
+
          network = new Network(this, "network", environment, "prod", new Network.NetworkInputParameters());
         Service service = new Service(this, "Service", environment, new ApplicationEnvironment("SpringBootApplication", "prod"),
           new Service.ServiceInputParameters(
@@ -37,11 +38,13 @@ public class MySpringBootApplicationStack  extends Stack{
             Collections.emptyList(),
             Collections.emptyMap())
             .withContainerPort(5401)
+            // .withContainerProtocol("HTTPS")
             .withTaskRolePolicyStatements(List.of(
                 PolicyStatement.Builder
                 .create()
                 .effect(Effect.ALLOW)
-                .resources(List.of(tableArn))
+                .resources(List.of(tableArn,
+                tableArn+"/index/*"))
                 .actions(List.of("dynamodb:*"
                 ))
                 .build(),
