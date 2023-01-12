@@ -28,12 +28,12 @@ jobs:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ env.AWS_REGION }}
-    - name: Install dependencies
-      run: cd infra && yarn
+    # - name: Install dependencies
+    #   run: cd infra && yarn
     - name: Synth stack
-      run: cd infra && yarn cdk synth
+      run: cd infra && npx cdk synth
     - name: Deploy stack
-      run: cd infra && yarn cdk deploy --all --require-approval never 
+      run: cd infra && npx cdk deploy --all --require-approval never 
     # - name: cdk deploy
     #   uses: guychauliac/aws-cdk-github-actions@v1
     #   with:
