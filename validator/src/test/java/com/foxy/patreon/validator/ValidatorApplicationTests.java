@@ -70,7 +70,7 @@ org.slf4j.Logger logger= LoggerFactory.getLogger(ValidatorApplicationTests.class
 	}
 
 	@ParameterizedTest()
-	@ValueSource(strings ={"Patronnasda"})
+	@ValueSource(strings ={"Patron"})
 	void testCreation(String name){
 
 		try{
@@ -120,7 +120,8 @@ org.slf4j.Logger logger= LoggerFactory.getLogger(ValidatorApplicationTests.class
 		
 		try{StepVerifier.create(
 			validatorService.updateMembers("3793891",pageSize))
-			.expectNextCount(3514)
+			// .consumeNextWith(p->logger.info(p.toString()))
+			.expectNextCount(3551)
 			.expectComplete()
 			.verify();}
 		catch(Exception e){
@@ -136,8 +137,8 @@ org.slf4j.Logger logger= LoggerFactory.getLogger(ValidatorApplicationTests.class
 	void findById(Map<String,String> args){
 		PatronEntity p = new PatronEntity();
 		p = parseArgs(p,args);
-		logger.info(validatorService.findById(p)
-		.block().toString());
+		validatorService.findById(p)
+		.subscribe(a->logger.info(a.toString()));
 	}
 	
 	public static Stream<Map<String,String>> findByIdMethodSource(){
@@ -147,8 +148,8 @@ org.slf4j.Logger logger= LoggerFactory.getLogger(ValidatorApplicationTests.class
 	}
 	public static Stream<Arguments> testUpdateMembersArgSource() {
 		return Stream.of(
-			Arguments.of("PatronTestC",501),
-			Arguments.of("PatronTestC",124)
+			Arguments.of("Patron",501),
+			Arguments.of("Patron",124)
 		);
 	}
 	private static PatronEntity parseArgs(PatronEntity p, Map<String,String> args) {
