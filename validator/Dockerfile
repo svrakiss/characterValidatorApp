@@ -1,7 +1,7 @@
 FROM amazoncorretto:17 as build
 COPY . /srv
 WORKDIR /srv
-
+RUN chmod +x mvnw
 RUN ./mvnw -DskipTests package
 
 FROM amazoncorretto:17
