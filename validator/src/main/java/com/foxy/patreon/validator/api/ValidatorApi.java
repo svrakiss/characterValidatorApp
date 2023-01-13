@@ -64,4 +64,8 @@ ValidatorService validatorService;
     {
     return (validatorService.findById(patronEntity));
 }
+@GetMapping("/")
+public ResponseEntity<String> healthCheck(){
+return ResponseEntity.ok("Leave me alone");
+}
 }
