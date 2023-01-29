@@ -92,14 +92,28 @@ public class ValidatorServiceImpl implements ValidatorService{
     }
     return Mono.empty();
 }
-    @Override
+
+@Override
     public Mono<PatronEntity> deletePatron(PatronEntity patronEntity) {
         // Easiest to use the primary index
         
         return patronRepo.delete(patronEntity,pickIndex(patronEntity));
     }
     private String pickIndex(PatronEntity patronEntity) {
-        return null;
+            // TODO Determine schema for patron id and discord id
+    final Pattern matcher = Pattern.compile(".*");
+    final Pattern matcher2 = Pattern.compile(".*");
+    if (patronEntity.getPatronId() != null && matcher.matcher(patronEntity.getPatronId()).matches()) {
+        return "patron";
+    }
+    if (patronEntity.getDiscordId() != null &&
+            matcher2.matcher(patronEntity.getDiscordId()).matches()) {
+        return "discordIdIndex";
+    }
+    if (patronEntity.getId() != null) {
+        return "id";
+    }
+    return "none";
     }
     @Override
     public Mono<PatronEntity> deleteCharacter(PatronEntity patronEntity) {
@@ -134,6 +148,45 @@ public class ValidatorServiceImpl implements ValidatorService{
             );
         }
         return patronRepo.addCharacter(patronEntity);
+    }
+    @Override
+    public Flux<PatronEntity> updateMember(String campaignId, Integer pageSize, Flux<PatronEntity> members) {
+        // TODO Auto-generated method stub
+        JSONObject reqJsonObject = new JSONObject();
+        // need to explicitly state includes fields
+        // includes entries have to be plural.
+        // fields entries have to be singular
+        reqJsonObject.put("include",List.of("currently_entitled_tiers","user"));
+        Map<String,List<String>> fields = new HashMap<>();
+        fields.put("user",List.of("social_connections"));
+        fields.put("member",List.of("patron_status"));
+        fields.put("tier",List.of("title"));
+        reqJsonObject.put("fields", fields);
+        var result =members.map(
+            
+        t -> 
+        switch(pickIndex(t))
+        {
+            case "patron" -> endPoint+"member/?campaign_id="+campaignId+"&page_size="+pageSize+"&patron_id="+t.getPatronId();
+            case "discordIdIndex" -> endPoint+"member/?campaign_id="+campaignId+"&page_size="+pageSize+"&discord_id="+t.getDiscordId();
+            case "id" -> endPoint+"member/?campaign_id="+campaignId+"&page_size="+pageSize+"&patron_id="+t.getId().split("PATREON_")[1];
+            default -> "";
+        }
+        ).flatMap(url->
+        rest.post( )
+        .uri(url)
+        .contentType(MediaType.APPLICATION_JSON)
+        .bodyValue(reqJsonObject)
+         .accept(MediaType.APPLICATION_JSON)
+        .retrieve()
+        .onStatus(
+            e->e.value()==504, 
+            response-> Mono.error(new GateWayTimeoutException()))
+        .toEntity(PatronEntity.class)
+        .retryWhen(Retry.backoff(4, Duration.ofSeconds(5))
+        .filter(t->t instanceof GateWayTimeoutException))
+        );
+        return patronRepo.addAll(result);
     }
     
 }

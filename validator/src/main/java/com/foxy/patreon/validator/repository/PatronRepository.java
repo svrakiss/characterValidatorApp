@@ -50,6 +50,15 @@ public class PatronRepository {
             a.setCreationDate(now);
             return table.updateItem(a);}); // updateItem takes a PatronEntity and returns a Patron Entity
     }
+    public  Flux<PatronEntity> addAll(Flux<ResponseEntity<PatronEntity>> response){
+        Instant now = Instant.now();
+        return response
+        .mapNotNull(ResponseEntity::getBody)
+        .map(a->{
+            a.setCreationDate(now);
+            return table.updateItem(a);}); // updateItem takes a PatronEntity and returns a Patron Entity
+    }
+
 
     public Mono<PatronEntity> findById(String id) {
         Key key = Key.builder().partitionValue(id).sortValue("INFO").build();

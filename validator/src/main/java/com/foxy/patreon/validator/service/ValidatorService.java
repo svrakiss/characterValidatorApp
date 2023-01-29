@@ -13,5 +13,6 @@ public interface ValidatorService{
     Mono<PatronEntity> deletePatron(PatronEntity patronEntity);
     Mono<PatronEntity> deleteCharacter(PatronEntity patronEntity);
     Mono<PatronEntity> addCharacter(PatronEntity patronEntity);
+    Flux<PatronEntity> updateMember(String campaignId, Integer pageSize, Flux<PatronEntity> members);
 
 }

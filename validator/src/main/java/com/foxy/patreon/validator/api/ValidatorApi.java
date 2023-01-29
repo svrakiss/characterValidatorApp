@@ -39,8 +39,15 @@ ValidatorService validatorService;
     public Flux<PatronEntity> updateMembers(@PathVariable("campaign_id") String campaignId,@RequestParam(defaultValue = "100",name = "pageSize") Integer pageSize ){
 
         return validatorService.updateMembers(campaignId,pageSize);
-    // return Mono.just(ResponseEntity.ok("Hi"));
     }
+
+    @RequestMapping(value="/{campaign_id}",method={RequestMethod.PUT,RequestMethod.GET})
+    public Flux<PatronEntity> updateMember(@PathVariable("campaign_id") String campaignId,@RequestParam(defaultValue = "100",name = "pageSize") Integer pageSize, @RequestBody Flux<PatronEntity> members ){
+
+        return validatorService.updateMember(campaignId,pageSize,members);
+
+    }
+
     @DeleteMapping("/member")
     public Mono<PatronEntity> deletePatron(@RequestBody PatronEntity patronEntity){
         return validatorService.deletePatron(patronEntity);
