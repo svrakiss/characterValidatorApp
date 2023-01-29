@@ -13,6 +13,8 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientException;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import com.foxy.patreon.validator.entity.PatronEntity;
 import com.foxy.patreon.validator.repository.PatronRepository;
@@ -183,6 +185,7 @@ public class ValidatorServiceImpl implements ValidatorService{
             e->e.value()==504, 
             response-> Mono.error(new GateWayTimeoutException()))
         .toEntity(PatronEntity.class)
+        .onErrorResume(WebClientResponseException.class, e->e.getStatusCode().is4xxClientError() ? Mono.empty(): Mono.error(e))
         .retryWhen(Retry.backoff(4, Duration.ofSeconds(5))
         .filter(t->t instanceof GateWayTimeoutException))
         );
