@@ -41,10 +41,10 @@ ValidatorService validatorService;
         return validatorService.updateMembers(campaignId,pageSize);
     }
 
-    @RequestMapping(value="/{campaign_id}",method={RequestMethod.PUT,RequestMethod.GET})
-    public Flux<PatronEntity> updateMember(@PathVariable("campaign_id") String campaignId,@RequestParam(defaultValue = "100",name = "pageSize") Integer pageSize, @RequestBody Flux<PatronEntity> members ){
+    @RequestMapping(value="/update/member",method={RequestMethod.PUT,RequestMethod.GET})
+    public Flux<PatronEntity> updateMember(@RequestParam(defaultValue = "100",name = "pageSize") Integer pageSize, @RequestBody Flux<PatronEntity> members ){
 
-        return validatorService.updateMember(campaignId,pageSize,members);
+        return validatorService.updateMember(pageSize,members);
 
     }
 

@@ -1,6 +1,7 @@
 package com.foxy.patreon.validator.service;
 
 import java.time.Duration;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -152,13 +153,13 @@ public class ValidatorServiceImpl implements ValidatorService{
         return patronRepo.addCharacter(patronEntity);
     }
     @Override
-    public Flux<PatronEntity> updateMember(String campaignId, Integer pageSize, Flux<PatronEntity> members) {
+    public Flux<PatronEntity> updateMember(Integer pageSize, Flux<PatronEntity> members) {
         // TODO Auto-generated method stub
         JSONObject reqJsonObject = new JSONObject();
         // need to explicitly state includes fields
         // includes entries have to be plural.
         // fields entries have to be singular
-        reqJsonObject.put("include",List.of("currently_entitled_tiers","user"));
+        reqJsonObject.put("include",Collections.EMPTY_LIST);
         Map<String,List<String>> fields = new HashMap<>();
         fields.put("user",List.of("social_connections"));
         fields.put("member",List.of("patron_status"));
@@ -169,9 +170,9 @@ public class ValidatorServiceImpl implements ValidatorService{
         t -> 
         switch(pickIndex(t))
         {
-            case "patron" -> endPoint+"member/?campaign_id="+campaignId+"&page_size="+pageSize+"&patron_id="+t.getPatronId();
-            case "discordIdIndex" -> endPoint+"member/?campaign_id="+campaignId+"&page_size="+pageSize+"&discord_id="+t.getDiscordId();
-            case "id" -> endPoint+"member/?campaign_id="+campaignId+"&page_size="+pageSize+"&patron_id="+t.getId().split("PATREON_")[1];
+            case "patron" -> endPoint+"member/?page_size="+pageSize+"&patron_id="+t.getPatronId();
+            case "discordIdIndex" -> endPoint+"member/?page_size="+pageSize+"&discord_id="+t.getDiscordId();
+            case "id" -> endPoint+"member/?page_size="+pageSize+"&patron_id="+t.getId().split("PATREON_")[1];
             default -> "";
         }
         ).flatMap(url->
@@ -185,7 +186,7 @@ public class ValidatorServiceImpl implements ValidatorService{
             e->e.value()==504, 
             response-> Mono.error(new GateWayTimeoutException()))
         .toEntity(PatronEntity.class)
-        .onErrorResume(WebClientResponseException.class, e->e.getStatusCode().is4xxClientError() ? Mono.empty(): Mono.error(e))
+        // .onErrorResume(WebClientResponseException.class, e->e.getStatusCode().is4xxClientError() ? Mono.empty(): Mono.error(e))
         .retryWhen(Retry.backoff(4, Duration.ofSeconds(5))
         .filter(t->t instanceof GateWayTimeoutException))
         );
