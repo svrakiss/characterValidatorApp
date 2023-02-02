@@ -5,6 +5,8 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
+import java.util.stream.Collector;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,8 +27,10 @@ import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.Expression;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
+import software.amazon.awssdk.enhanced.dynamodb.model.BatchWriteItemEnhancedRequest;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 import software.amazon.awssdk.enhanced.dynamodb.model.UpdateItemEnhancedRequest;
+import software.amazon.awssdk.enhanced.dynamodb.model.WriteBatch;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.ssm.SsmClient;
 
@@ -35,6 +39,8 @@ public class PatronRepository {
     final static Logger logger = LoggerFactory.getLogger(PatronRepository.class);
     @Autowired
     DynamoDbTable<PatronEntity> table;
+    @Autowired
+    DynamoDbEnhancedClient client;
     public Mono<Void> save(PatronDTO patronDTO){
         PatronEntity patronEntity= patronDTO.prepareEntity(patronDTO);
         return save(patronEntity);
@@ -43,20 +49,44 @@ public class PatronRepository {
         return Mono.fromRunnable(()-> table.putItem(patronEntity));
     }
     public  Flux<PatronEntity> addAll(Mono<ResponseEntity<List<PatronEntity>>> response){
-        Instant now = Instant.now();
-        return response.mapNotNull(ResponseEntity::getBody)
-        .flatMapIterable(i->i) // turns it into a Flux of Patron Entities 
+
+        return batchWrite(response.mapNotNull(ResponseEntity::getBody)
+        .flatMapIterable(i->i)); // turns it into a Flux of Patron Entities 
+         // updateItem takes a PatronEntity and returns a Patron Entity
+    }
+    public Flux<PatronEntity> batchWrite(Flux<PatronEntity> list){
+        return list
         .map(a->{
-            a.setCreationDate(now);
-            return table.updateItem(a);}); // updateItem takes a PatronEntity and returns a Patron Entity
+            a.setCreationDate(Instant.now());
+        return a;})
+        .window(25) // bulk request max size is 25
+        .flatMap(t ->
+         // put everything in the batch
+            t.collect(()->WriteBatch.builder(PatronEntity.class)
+            .mappedTableResource(table),
+          (x, y)->{
+            x.addPutItem(y);
+         })
+         // change the builder into the write request
+         .map(a->BatchWriteItemEnhancedRequest.builder()
+         .addWriteBatch(a.build())
+         .build())
+        )
+        // send off the batch write request
+        .map(
+            client::batchWriteItem
+        )
+        // read the result
+        .map(
+            a->
+            a.unprocessedPutItemsForTable(table)
+        )
+        .flatMapIterable(l->l) //return unprocessed items
+        ;
     }
     public  Flux<PatronEntity> addAll(Flux<ResponseEntity<PatronEntity>> response){
-        Instant now = Instant.now();
-        return response
-        .mapNotNull(ResponseEntity::getBody)
-        .map(a->{
-            a.setCreationDate(now);
-            return table.updateItem(a);}); // updateItem takes a PatronEntity and returns a Patron Entity
+        return batchWrite(response
+        .mapNotNull(ResponseEntity::getBody));
     }
 
 
