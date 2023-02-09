@@ -8,9 +8,17 @@ public class CharacterEntity {
     
     private String source;
     private String artist;
+    private String image;
     @DynamoDbAttribute("Artist")
     public String getArtist() {
         return artist;
+    }
+    @DynamoDbAttribute("Image")
+    public String getImage() {
+        return image;
+    }
+    public void setImage(String image) {
+        this.image = image;
     }
     public void setArtist(String artist) {
         this.artist = artist;
