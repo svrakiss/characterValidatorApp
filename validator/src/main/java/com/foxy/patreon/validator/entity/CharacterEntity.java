@@ -40,7 +40,8 @@ public class CharacterEntity {
     }
     @Override
     public String toString() {
-        return "CharacterEntity [source=" + source + ", artist=" + artist + ", comments=" + comments + "]";
+        return "CharacterEntity [source=" + source + ", artist=" + artist + ", image=" + image + ", comments="
+                + comments + "]";
     }
     
 }

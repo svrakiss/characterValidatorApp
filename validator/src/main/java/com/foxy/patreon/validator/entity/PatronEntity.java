@@ -144,7 +144,8 @@ public class PatronEntity {
     public String toString() {
         return "PatronEntity [id=" + id + ", sortKey=" + sortKey + ", discordId=" + discordId + ", patronId=" + patronId
                 + ", characterName=" + characterName + ", name=" + name + ", tier=" + tier + ", category=" + category
-                + ", meta=" + meta + ", status=" + status + ", creationDate=" + creationDate + ", image=" + image + "]";
+                + ", meta=" + meta + ", status=" + status + ", creationDate=" + creationDate + ", image=" + image
+                + ", userId=" + userId + "]";
     }
     @DynamoDbAttribute("UserId")
     @DynamoDbSecondaryPartitionKey(indexNames = {"UserId-index"})
